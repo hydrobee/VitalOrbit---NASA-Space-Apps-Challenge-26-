@@ -1,0 +1,144 @@
+/* ============================================================
+   THEME  (change colours here)
+   ============================================================ */
+:root{
+  --bg:#050a17; --panel:#0b1430; --panel2:#101c40; --line:#1f2f5f;
+  --text:#e6ecff; --muted:#8d9ac8; --cyan:#38e1ff;
+  --ok:#3ddc97; --warn:#ffc84a; --crit:#ff5d6c; --radius:14px;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0; min-height:100vh; color:var(--text);
+  font-family:'Inter',system-ui,sans-serif; line-height:1.5;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(56,225,255,.12), transparent 60%),
+    radial-gradient(800px 500px at -10% 110%, rgba(110,80,255,.12), transparent 60%),
+    var(--bg);
+}
+/* drifting starfield (drawn by initStarfield() in app.js) */
+#stars{position:fixed; inset:0; width:100%; height:100%; z-index:-1; pointer-events:none}
+.mono{font-family:'JetBrains Mono',monospace}
+h1,h2,h3{font-family:'Orbitron',sans-serif; margin:0; letter-spacing:.04em}
+h2{font-size:1.05rem; color:var(--cyan); text-transform:uppercase; margin-bottom:12px}
+h3{font-size:.95rem}
+small{color:var(--muted)}
+a{color:var(--cyan)}
+button,select,input{font:inherit; color:inherit}
+
+/* status colour helper: every .st-* sets --c */
+.st-ok{--c:var(--ok)} .st-warn{--c:var(--warn)} .st-crit{--c:var(--crit)}
+
+/* ---------- header / nav ---------- */
+.top{display:flex; flex-wrap:wrap; gap:12px; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--line); background:rgba(5,10,23,.7); backdrop-filter:blur(8px); position:sticky; top:0; z-index:20}
+.brand{display:flex; gap:12px; align-items:center}
+.brand h1{font-size:1.25rem}
+.logo{font-size:1.8rem; color:var(--cyan); animation:spin 14s linear infinite; display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hud{display:flex; flex-wrap:wrap; gap:10px; align-items:center}
+.chip{background:var(--panel2); border:1px solid var(--line); border-radius:999px; padding:5px 12px; font-size:.85rem}
+select{background:var(--panel2); border:1px solid var(--line); border-radius:8px; padding:6px 10px}
+nav{display:flex; gap:6px; flex-wrap:wrap; padding:10px 20px}
+nav button{background:transparent; border:1px solid var(--line); border-radius:10px; padding:8px 16px; cursor:pointer; transition:.2s}
+nav button:hover{border-color:var(--cyan)}
+nav button.on{background:var(--cyan); color:#021018; font-weight:600; border-color:var(--cyan)}
+main{max-width:1200px; margin:0 auto; padding:10px 20px 60px}
+.view[hidden]{display:none}
+
+/* ---------- generic panels ---------- */
+.panel{background:linear-gradient(180deg,var(--panel),#091128); border:1px solid var(--line); border-radius:var(--radius); padding:18px}
+.grid{display:grid; gap:16px}
+.g2{grid-template-columns:repeat(auto-fit,minmax(320px,1fr))}
+.vitals{grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.btn{background:var(--cyan); color:#021018; border:0; border-radius:10px; padding:10px 18px; font-weight:600; cursor:pointer; transition:.2s}
+.btn:hover{filter:brightness(1.1); transform:translateY(-1px)}
+.btn.ghost{background:transparent; color:var(--text); border:1px solid var(--line)}
+.pill{font-size:.7rem; font-weight:600; padding:3px 10px; border-radius:999px; color:var(--c); background:color-mix(in srgb,var(--c) 16%,transparent); border:1px solid color-mix(in srgb,var(--c) 45%,transparent); text-transform:uppercase; letter-spacing:.06em}
+
+/* ---------- alerts ---------- */
+.alert{border:1px solid color-mix(in srgb,var(--c) 55%,transparent); background:color-mix(in srgb,var(--c) 10%,transparent); border-left:4px solid var(--c); border-radius:10px; padding:12px 16px; margin-bottom:10px}
+.alert b{color:var(--c)}
+.alert.st-crit{animation:glow 1.6s ease-in-out infinite}
+@keyframes glow{50%{box-shadow:0 0 18px color-mix(in srgb,var(--crit) 55%,transparent)}}
+
+/* ---------- readiness ring ---------- */
+.ready{display:flex; gap:18px; align-items:center; flex-wrap:wrap}
+.ring{position:relative; width:130px; height:130px; flex:none}
+.ring svg{transform:rotate(-90deg)}
+.ring circle{fill:none; stroke-width:10}
+.ring .bg{stroke:var(--panel2)}
+.ring .fg{stroke:var(--c); stroke-linecap:round; stroke-dasharray:326.7; transition:stroke-dashoffset 1.2s ease; filter:drop-shadow(0 0 6px var(--c))}
+.ring .num{position:absolute; inset:0; display:grid; place-items:center; font-family:'Orbitron'; font-size:1.7rem}
+.badges{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px}
+.badge{font-size:.78rem; padding:5px 10px; border-radius:10px; border:1px dashed var(--line); color:var(--muted); filter:grayscale(1); opacity:.6}
+.badge.got{border:1px solid var(--cyan); color:var(--text); filter:none; opacity:1; background:rgba(56,225,255,.08)}
+
+/* ---------- vitals cards ---------- */
+.vital{border-left:4px solid var(--c); transition:.25s}
+.vital:hover{transform:translateY(-3px); box-shadow:0 6px 24px color-mix(in srgb,var(--c) 18%,transparent)}
+.vh{display:flex; justify-content:space-between; align-items:center; gap:8px}
+.vv{font-size:2rem; font-weight:700; margin:6px 0 0}
+.vv small{font-size:.8rem; margin-left:6px}
+.spark{width:100%; height:34px; margin:4px 0}
+.spark polyline{fill:none; stroke:var(--c); stroke-width:2; stroke-linejoin:round; stroke-linecap:round}
+details{font-size:.88rem}
+summary{cursor:pointer; color:var(--cyan); margin-top:4px}
+details p{margin:6px 0 0; color:#c9d3f5}
+
+/* ---------- hazards ---------- */
+.haz{margin-bottom:12px}
+.hl{display:flex; justify-content:space-between; font-size:.88rem}
+.bar{height:8px; background:var(--panel2); border-radius:999px; overflow:hidden; margin:4px 0}
+.bar i{display:block; height:100%; border-radius:999px; background:linear-gradient(90deg,var(--cyan),#8a6bff,var(--crit)); background-size:500px 100%; animation:grow 1s ease}
+@keyframes grow{from{width:0}}
+
+/* ---------- check-in form ---------- */
+form.fields{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px}
+.field{padding:12px; border:1px solid var(--line); border-radius:12px; border-left:4px solid var(--c,var(--line)); background:var(--panel2); transition:.2s}
+.field label{font-weight:600; font-size:.9rem; display:block; margin-bottom:6px}
+.field input[type=number]{width:100%; background:#08102a; border:1px solid var(--line); border-radius:8px; padding:8px 10px}
+.field input:focus{outline:2px solid var(--cyan)}
+.bp{display:flex; gap:8px; align-items:center}
+.help{font-size:.78rem; color:var(--muted); margin:6px 0 0}
+.live{font-size:.75rem; margin-top:4px; color:var(--c)}
+.syms{display:flex; flex-wrap:wrap; gap:8px}
+.syms label{display:inline-flex; gap:6px; align-items:center; font-weight:400; background:#08102a; border:1px solid var(--line); border-radius:999px; padding:5px 12px; cursor:pointer}
+
+/* ---------- body map ---------- */
+.bodywrap{display:grid; grid-template-columns:minmax(260px,420px) 1fr; gap:20px}
+.body3d{position:relative; width:100%; height:520px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; cursor:grab; touch-action:none;
+  background:
+    radial-gradient(circle at 50% 40%, rgba(56,225,255,.12), transparent 65%),
+    linear-gradient(rgba(56,225,255,.05) 1px, transparent 1px) 0 0/100% 28px,
+    #060d22}
+.body3d canvas{display:block; width:100%; height:100%}
+.label3d{position:absolute; top:10px; left:12px; z-index:2; font-size:.85rem; pointer-events:none; background:rgba(6,13,34,.75); padding:5px 10px; border-radius:10px; border:1px solid var(--line)}
+.hint3d{position:absolute; bottom:8px; left:0; right:0; text-align:center; font-size:.72rem; color:var(--muted); pointer-events:none}
+@media(max-width:760px){.body3d{height:420px}}
+@media(max-width:760px){.bodywrap{grid-template-columns:1fr}}
+#body{width:100%; max-height:560px}
+#body .outline{fill:none; stroke:#3a4f94; stroke-width:1.5; stroke-dasharray:4 3; pointer-events:none}
+.part{fill:var(--c); fill-opacity:.32; stroke:var(--c); stroke-width:1.4; cursor:pointer; transition:.2s}
+.part:hover{fill-opacity:.6}
+.part.sel{stroke-width:3.2; fill-opacity:.55; filter:drop-shadow(0 0 6px var(--c))}
+.part.st-crit{animation:beat 1s ease-in-out infinite}
+@keyframes beat{50%{fill-opacity:.8}}
+.partlist{display:flex; flex-wrap:wrap; gap:6px; margin-top:10px}
+.partlist button{background:var(--panel2); border:1px solid var(--c); border-radius:999px; padding:4px 12px; cursor:pointer; font-size:.8rem}
+.partlist button.sel{background:color-mix(in srgb,var(--c) 30%,transparent)}
+.info h3{font-size:1.2rem; margin-bottom:6px}
+.info ul{margin:6px 0 12px; padding-left:20px}
+.tag{display:inline-block; font-size:.74rem; padding:2px 9px; margin:0 6px 6px 0; border-radius:999px; background:rgba(138,107,255,.15); border:1px solid rgba(138,107,255,.5)}
+
+/* ---------- trends ---------- */
+.ctl{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px}
+.chartbox{position:relative; height:340px}
+
+/* ---------- learn ---------- */
+.learn{grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.learn p{margin:.4rem 0; font-size:.9rem}
+
+/* toast */
+#toast{position:fixed; bottom:24px; left:50%; transform:translate(-50%,40px); background:var(--panel2); border:1px solid var(--cyan); padding:10px 20px; border-radius:12px; opacity:0; transition:.3s; z-index:50; pointer-events:none}
+#toast.show{opacity:1; transform:translate(-50%,0)}
+footer{max-width:1200px; margin:0 auto; padding:0 20px 40px; color:var(--muted); font-size:.8rem}

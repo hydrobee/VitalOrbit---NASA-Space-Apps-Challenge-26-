@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>VitalOrbit - Astronaut Self-Health Assessment</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Orbitron:wght@500;700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.147.0/build/three.min.js"></script>
+
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<canvas id="stars" aria-hidden="true"></canvas>
+<header class="top">
+  <div class="brand">
+    <span class="logo">&#9673;</span>
+    <div><h1>VitalOrbit</h1><small>Astronaut self-health assessment</small></div>
+  </div>
+  <div class="hud">
+    <label><small>Environment&nbsp;</small><select id="env"></select></label>
+    <div class="chip">Mission Day <b id="mday" class="mono">-</b></div>
+    <div class="chip">Lv <b id="lvl" class="mono">1</b> &middot; <b id="xp" class="mono">0</b> XP</div>
+  </div>
+</header>
+
+<nav id="nav">
+  <button data-view="dashboard" class="on">Dashboard</button>
+  <button data-view="checkin">Daily check-in</button>
+  <button data-view="body">Body map</button>
+  <button data-view="trends">Trends</button>
+  <button data-view="learn">Learn &amp; sources</button>
+</nav>
+
+<main>
+<noscript>This app needs JavaScript enabled.</noscript>
+
+<!-- ======================= DASHBOARD ======================= -->
+<section id="v-dashboard" class="view">
+  <div id="banner"></div>
+  <div id="alerts"></div>
+
+  <div class="grid g2" style="margin-bottom:16px">
+    <div class="panel">
+      <h2>Mission readiness</h2>
+      <div class="ready">
+        <div class="ring" id="ring">
+          <svg width="130" height="130" viewBox="0 0 130 130">
+            <circle class="bg" cx="65" cy="65" r="52"/>
+            <circle class="fg" id="ringfg" cx="65" cy="65" r="52" stroke-dashoffset="326.7"/>
+          </svg>
+          <div class="num" id="score">0</div>
+        </div>
+        <div>
+          <div>Streak: <b class="mono" id="streak">0</b> days</div>
+          <small>Based on your latest check-in and trend alerts.</small>
+          <div class="badges" id="badges"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Mission hazards <small id="envname"></small></h2>
+      <div id="hazards"></div>
+      <small id="delay"></small>
+    </div>
+  </div>
+
+  <div class="panel" id="escalate" style="margin-bottom:16px"></div>
+
+  <h2>Latest vitals <small id="latestdate"></small></h2>
+  <div class="grid vitals" id="vitals"></div>
+</section>
+
+<!-- ======================= CHECK-IN ======================= -->
+<section id="v-checkin" class="view" hidden>
+  <div class="panel">
+    <h2>Daily check-in</h2>
+    <p><small>Enter today's measurements. Borders turn green / amber / red as you type. Leave nothing blank, then save.</small></p>
+    <form class="fields" id="form" autocomplete="off">
+      <div class="field" data-m="hr">
+        <label for="f-hr">Resting heart rate (bpm)</label>
+        <input id="f-hr" type="number" min="20" max="250" inputmode="numeric">
+        <p class="help" data-help="hr"></p><div class="live"></div>
+      </div>
+      <div class="field" data-m="bp">
+        <label for="f-sys">Blood pressure (mmHg)</label>
+        <div class="bp"><input id="f-sys" type="number" min="50" max="260" placeholder="Systolic"> / <input id="f-dia" type="number" min="30" max="160" placeholder="Diastolic"></div>
+        <p class="help" data-help="bp"></p><div class="live"></div>
+      </div>
+      <div class="field" data-m="glucose">
+        <label for="f-glucose">Blood glucose (mg/dL)</label>
+        <input id="f-glucose" type="number" min="20" max="600" inputmode="numeric">
+        <p class="help" data-help="glucose"></p><div class="live"></div>
+      </div>
+      <div class="field" data-m="temp">
+        <label for="f-temp">Body temperature (&deg;C)</label>
+        <input id="f-temp" type="number" step="0.1" min="30" max="43">
+        <p class="help" data-help="temp"></p><div class="live"></div>
+      </div>
+      <div class="field" data-m="spo2">
+        <label for="f-spo2">Blood oxygen SpO&#8322; (%)</label>
+        <input id="f-spo2" type="number" min="50" max="100">
+        <p class="help" data-help="spo2"></p><div class="live"></div>
+      </div>
+      <div class="field" data-m="sleep">
+        <label for="f-sleep">Sleep last night (hours)</label>
+        <input id="f-sleep" type="number" step="0.1" min="0" max="16">
+        <p class="help" data-help="sleep"></p><div class="live"></div>
+      </div>
+      <div class="field" data-m="mood">
+        <label for="f-mood">Mood: <b id="moodlabel"></b></label>
+        <input id="f-mood" type="range" min="1" max="5" value="3" style="width:100%">
+        <p class="help" data-help="mood"></p><div class="live"></div>
+      </div>
+      <div class="field" data-m="exercise">
+        <label for="f-exercise">Exercise today (minutes)</label>
+        <input id="f-exercise" type="number" min="0" max="600" inputmode="numeric">
+        <p class="help" data-help="exercise"></p><div class="live"></div>
+      </div>
+      <div class="field" style="grid-column:1/-1">
+        <label>Any symptoms today?</label>
+        <div class="syms" id="syms"></div>
+      </div>
+    </form>
+    <p style="margin-top:16px"><button class="btn" id="save">Save check-in</button>
+    <button class="btn ghost" id="reset" type="button">Reset demo data</button></p>
+  </div>
+</section>
+
+<!-- ======================= BODY MAP ======================= -->
+<section id="v-body" class="view" hidden>
+  <div class="panel">
+    <h2>Body map</h2>
+    <p><small>Tap a region to see what it does, how spaceflight affects it and what to do. Colours reflect your latest check-in.</small></p>
+    <div class="bodywrap">
+      <div>
+        <!-- 3D view (Three.js). The 2D SVG below is the fallback if WebGL/Three.js can't load. -->
+        <div id="body3d" class="body3d">
+          <div id="label3d" class="label3d"></div>
+          <div class="hint3d">Drag to rotate &middot; scroll or pinch to zoom &middot; tap a region</div>
+        </div>
+        <svg id="body" style="display:none" viewBox="0 0 200 440" role="img" aria-label="Clickable human body map">
+          <g class="outline">
+            <circle cx="100" cy="46" r="30"/>
+            <path d="M70 90 Q100 78 130 90 L138 230 Q100 252 62 230 Z"/>
+          </g>
+          <!-- muscles: arms + legs -->
+          <rect class="part" data-part="muscle" x="36" y="94" width="22" height="130" rx="11"/>
+          <rect class="part" data-part="muscle" x="142" y="94" width="22" height="130" rx="11"/>
+          <rect class="part" data-part="muscle" x="66" y="244" width="28" height="170" rx="13"/>
+          <rect class="part" data-part="muscle" x="106" y="244" width="28" height="170" rx="13"/>
+          <!-- lungs -->
+          <ellipse class="part" data-part="lungs" cx="80" cy="128" rx="17" ry="30"/>
+          <ellipse class="part" data-part="lungs" cx="120" cy="128" rx="17" ry="30"/>
+          <!-- gut / metabolism / immune -->
+          <ellipse class="part" data-part="gut" cx="100" cy="202" rx="25" ry="20"/>
+          <!-- bones: spine, pelvis, leg bones -->
+          <rect class="part" data-part="bones" x="96" y="78" width="8" height="120" rx="4"/>
+          <ellipse class="part" data-part="bones" cx="100" cy="228" rx="30" ry="11"/>
+          <rect class="part" data-part="bones" x="76" y="250" width="8" height="158" rx="4"/>
+          <rect class="part" data-part="bones" x="116" y="250" width="8" height="158" rx="4"/>
+          <!-- heart -->
+          <path class="part" data-part="heart" d="M100 160 C85 148 81 136 87 129 C92 123 99 125 100 131 C101 125 108 123 113 129 C119 136 115 148 100 160 Z"/>
+          <!-- brain + eyes -->
+          <ellipse class="part" data-part="brain" cx="100" cy="34" rx="20" ry="14"/>
+          <circle class="part" data-part="eyes" cx="90" cy="56" r="5"/>
+          <circle class="part" data-part="eyes" cx="110" cy="56" r="5"/>
+        </svg>
+        <div class="partlist" id="partlist"></div>
+      </div>
+      <div class="info panel" id="partinfo" style="background:var(--panel2)"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ======================= TRENDS ======================= -->
+<section id="v-trends" class="view" hidden>
+  <div class="panel">
+    <h2>Trends</h2>
+    <div class="ctl">
+      <select id="tmetric"></select>
+      <select id="trange">
+        <option value="7">Last 7 days</option>
+        <option value="14">Last 14 days</option>
+        <option value="30" selected>Last 30 days</option>
+      </select>
+    </div>
+    <div class="chartbox"><canvas id="chart"></canvas></div>
+    <p><small>Shaded band = nominal range. Dot colour = status of that day's reading.</small></p>
+  </div>
+</section>
+
+<!-- ======================= LEARN ======================= -->
+<section id="v-learn" class="view" hidden>
+  <div class="grid learn" id="learncards"></div>
+  <div class="panel" style="margin-top:16px">
+    <h2>Sources (verify and cite in your submission)</h2>
+    <ul>
+      <li><a href="https://www.nasa.gov/hrp/" target="_blank" rel="noopener">NASA Human Research Program</a> - the five hazards of human spaceflight</li>
+      <li><a href="https://humanresearchroadmap.nasa.gov/" target="_blank" rel="noopener">NASA Human Research Roadmap</a> - risk pages (bone loss, SANS, behavioral health, etc.)</li>
+      <li><a href="https://standards.nasa.gov/" target="_blank" rel="noopener">NASA Technical Standards</a> - search for NASA-STD-3001 (spaceflight human-system standard)</li>
+      <li><a href="https://www.esa.int/Science_Exploration/Human_and_Robotic_Exploration" target="_blank" rel="noopener">ESA Human &amp; Robotic Exploration</a></li>
+      <li><a href="https://www.heart.org/" target="_blank" rel="noopener">American Heart Association</a> - blood pressure and heart rate ranges</li>
+      <li><a href="https://diabetes.org/" target="_blank" rel="noopener">American Diabetes Association</a> - glucose ranges</li>
+      <li><a href="https://www.who.int/" target="_blank" rel="noopener">World Health Organization</a> - general health reference</li>
+    </ul>
+  </div>
+</section>
+</main>
+
+<footer>
+  <b>Disclaimer:</b> VitalOrbit is a decision-support prototype built for a hackathon. It is not a medical device and does not diagnose. Reference ranges are general adult guidance and must be validated against NASA-STD-3001 and flight surgeon protocols. In any emergency follow onboard medical procedures and contact the flight surgeon.
+</footer>
+<div id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
